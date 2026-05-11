@@ -44,7 +44,7 @@ describe("E2E-3 Walkthrough: Expert Assignment & Patch", () => {
         assignment_type: "review_and_patch",
       })
     });
-    const res = await requestExpertPatchPOST(req, { params: { id: "proj_001" } });
+    const res = await requestExpertPatchPOST(req, { params: Promise.resolve({ id: "proj_001"  }) });
     const json = await res.json();
     
     expect(res.status).toBe(201);

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { type MobileIMProject } from "@/domain/mobile-im/mobile-im-types";
 
 // In real app, query from DB
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // Mock logic - assume successful
   return NextResponse.json({
     id,
@@ -12,8 +12,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   });
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = await request.json();
   return NextResponse.json({
     id,

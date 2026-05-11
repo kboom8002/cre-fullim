@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { importFromHandoff } from "@/domain/handoff/handoff-service";
 import { HANDOFF_ERROR_CODES } from "@js-ssot/contracts";
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { handoff_token } = body as { handoff_token?: string };
 

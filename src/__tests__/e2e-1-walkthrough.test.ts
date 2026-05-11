@@ -41,7 +41,7 @@ vi.mock("@/lib/supabase/service", () => ({
 describe("E2E-1 Walkthrough: Handoff -> Import -> Dashboard", () => {
   it("Phase 1: Preview Handoff", async () => {
     const req = new NextRequest("http://localhost/api/im-projects/preview-handoff/hof_demo_pilot_001");
-    const res = await getPreviewHandoffGET(req, { params: { token: "hof_demo_pilot_001" } });
+    const res = await getPreviewHandoffGET(req, { params: Promise.resolve({ token: "hof_demo_pilot_001"  }) });
     const json = await res.json();
     
     expect(res.status).toBe(200);
@@ -78,7 +78,7 @@ describe("E2E-1 Walkthrough: Handoff -> Import -> Dashboard", () => {
 
   it("Phase 4: Dashboard Get Project", async () => {
     const req = new NextRequest("http://localhost/api/im-projects/proj_001");
-    const res = await getProjectGET(req, { params: { id: "proj_001" } });
+    const res = await getProjectGET(req, { params: Promise.resolve({ id: "proj_001"  }) });
     const json = await res.json();
     
     expect(res.status).toBe(200);

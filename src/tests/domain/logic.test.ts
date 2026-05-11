@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { ReadinessService } from '@/domain/readiness/readiness-service';
+import { computeReadiness } from '@/domain/readiness/readiness-service';
 import { planSections } from '@/domain/sections/section-planner';
 import { runGateCheck, canApproveBuyerReady } from '@/domain/gate/gate-review-service';
 import { generateMobileIM } from '@/domain/mobile-im/mobile-im-writer';
@@ -12,7 +12,7 @@ describe('FI-L2 Domain Logic', () => {
         rent_roll_confirmed: false,
       }
     };
-    const readiness = await ReadinessService.evaluateReadiness({
+    const readiness = await computeReadiness({
       project_id: 'test',
       target_output: 'full_im',
       building_ssot_full: ssot
@@ -24,7 +24,7 @@ describe('FI-L2 Domain Logic', () => {
 
   test('FI-L2-02: 18 section planner', async () => {
     const ssot = { lease_income: { rent_roll_confirmed: true, operating_expenses_confirmed: true } };
-    const readiness = await ReadinessService.evaluateReadiness({
+    const readiness = await computeReadiness({
       project_id: 'test',
       target_output: 'full_im',
       building_ssot_full: ssot
