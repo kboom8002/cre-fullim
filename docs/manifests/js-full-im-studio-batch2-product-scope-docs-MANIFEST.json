@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-05-09T02:12:36",
+  "batch": "Batch 2 — Full IM Studio Product / Scope Lock",
+  "files": [
+    "js-full-im-studio/docs/00-product-brief.md",
+    "js-full-im-studio/docs/01-ai-pair-coding-guide.md",
+    "js-full-im-studio/docs/02-scope-and-boundaries.md",
+    "js-full-im-studio/docs/03-user-roles.md",
+    "js-full-im-studio/docs/04-commercial-packages.md",
+    "js-full-im-studio/docs/BATCH-2-README.md"
+  ],
+  "purpose": "Lock Full IM Studio product definition, scope, roles, and commercialization package assumptions."
+}

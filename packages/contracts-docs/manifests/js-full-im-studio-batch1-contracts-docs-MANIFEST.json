@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-05-09T02:09:23",
+  "batch": "Batch 1 — Shared Contracts Pack",
+  "files": [
+    "packages/contracts-docs/00-contracts-overview.md",
+    "packages/contracts-docs/01-building-ssot-contracts.md",
+    "packages/contracts-docs/02-document-contracts.md",
+    "packages/contracts-docs/03-gate-disclosure-contracts.md",
+    "packages/contracts-docs/04-im-project-contracts.md",
+    "packages/contracts-docs/05-expert-patch-contracts.md",
+    "packages/contracts-docs/06-event-contracts.md",
+    "packages/contracts-docs/07-forbidden-claims-and-safe-language.md",
+    "packages/contracts-docs/08-versioning-policy.md",
+    "packages/contracts-docs/BATCH-1-README.md"
+  ],
+  "purpose": "Define shared schemas, enums, policies, event names, safety rules, and versioning strategy for MVP and Full IM Studio."
+}

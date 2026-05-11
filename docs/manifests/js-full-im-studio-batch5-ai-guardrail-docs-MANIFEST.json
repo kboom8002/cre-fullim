@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-05-09T02:28:08",
+  "batch": "Batch 5 — AI Agent / Prompt / Guardrail Contract",
+  "files": [
+    "js-full-im-studio/docs/15-ai-agent-contracts.md",
+    "js-full-im-studio/docs/16-prompt-contracts.md",
+    "js-full-im-studio/docs/17-financial-analysis-guardrails.md",
+    "js-full-im-studio/docs/18-risk-boundary-policy.md",
+    "js-full-im-studio/docs/19-disclosure-guard-policy.md",
+    "js-full-im-studio/docs/20-golden-dataset-extraction.md",
+    "js-full-im-studio/docs/BATCH-5-README.md"
+  ],
+  "purpose": "Define AI agents, prompt contracts, financial/risk/disclosure guardrails, and Golden Dataset extraction policy."
+}

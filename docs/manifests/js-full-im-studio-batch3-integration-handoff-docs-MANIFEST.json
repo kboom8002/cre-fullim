@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-05-09T02:14:38",
+  "batch": "Batch 3 — Integration & Handoff Contract",
+  "files": [
+    "js-full-im-studio/docs/05-integration-with-mvp.md",
+    "js-full-im-studio/docs/06-handoff-api-contract.md",
+    "js-full-im-studio/docs/07-import-from-bssot-lite.md",
+    "js-full-im-studio/docs/08-cross-app-auth-and-permission.md",
+    "js-full-im-studio/docs/09-cross-app-events.md",
+    "js-full-im-studio/docs/BATCH-3-README.md"
+  ],
+  "purpose": "Define MVP to Full IM Studio integration, handoff token, B-SSoT Lite import, cross-app auth, permissions, and events."
+}

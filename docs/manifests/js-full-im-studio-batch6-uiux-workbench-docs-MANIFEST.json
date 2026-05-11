@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-05-09T02:58:36",
+  "batch": "Batch 6 — UI/UX / Expert Workbench / Gate Review Spec",
+  "files": [
+    "js-full-im-studio/docs/21-information-architecture.md",
+    "js-full-im-studio/docs/22-ui-ux-spec.md",
+    "js-full-im-studio/docs/23-full-im-studio-dashboard.md",
+    "js-full-im-studio/docs/24-section-editor-spec.md",
+    "js-full-im-studio/docs/25-expert-workbench-spec.md",
+    "js-full-im-studio/docs/26-gate-review-console-spec.md",
+    "js-full-im-studio/docs/27-export-preview-spec.md",
+    "js-full-im-studio/docs/BATCH-6-README.md"
+  ],
+  "purpose": "Define IA, UI/UX, dashboard, section editor, expert workbench, gate review console, and export preview for JS Full IM Studio."
+}

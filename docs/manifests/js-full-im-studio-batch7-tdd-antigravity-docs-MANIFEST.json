@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-05-09T03:03:47",
+  "batch": "Batch 7 — TDD / Implementation Slices / Antigravity Prompt Pack",
+  "files": [
+    "js-full-im-studio/docs/28-test-plan.md",
+    "js-full-im-studio/docs/29-implementation-slices.md",
+    "js-full-im-studio/docs/30-antigravity-tasks.md",
+    "js-full-im-studio/docs/31-single-lane-prompts.md",
+    "js-full-im-studio/docs/32-tdd-prompts.md",
+    "js-full-im-studio/docs/33-demo-scenarios.md",
+    "js-full-im-studio/docs/34-commercial-readiness-checklist.md",
+    "js-full-im-studio/docs/BATCH-7-README.md"
+  ],
+  "purpose": "Define test plan, implementation slices, Antigravity tasks, single-lane prompts, TDD prompts, demo scenarios, and commercial readiness checklist."
+}

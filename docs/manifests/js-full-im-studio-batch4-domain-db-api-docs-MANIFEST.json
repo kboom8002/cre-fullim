@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-05-09T02:24:42",
+  "batch": "Batch 4 — Full IM Domain / Database / API Contract",
+  "files": [
+    "js-full-im-studio/docs/10-domain-model.md",
+    "js-full-im-studio/docs/11-database-schema.md",
+    "js-full-im-studio/docs/12-api-contracts.md",
+    "js-full-im-studio/docs/13-status-transition.md",
+    "js-full-im-studio/docs/14-storage-and-evidence.md",
+    "js-full-im-studio/docs/BATCH-4-README.md"
+  ],
+  "purpose": "Define Full IM Studio domain model, database schema, APIs, status transitions, storage, and evidence policy."
+}

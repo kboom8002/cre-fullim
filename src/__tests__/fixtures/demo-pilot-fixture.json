@@ -1,0 +1,94 @@
+{
+  "handoff": {
+    "token": "hof_demo_pilot_001",
+    "status": "active",
+    "source_building_ssot_lite_id": "bsl_pilot_001",
+    "expires_at": "2027-01-01T00:00:00.000Z",
+    "contracts_version": "1.0",
+    "payload_version": "1.0",
+    "requested_output": "buyer_ready_full_im",
+    "package_intent": "ai_expert_review",
+    "area_signal": "성동구 성수권역",
+    "gross_area_sqm": 1850,
+    "building_type": "mixed_use",
+    "source_document_ids": ["doc_001", "doc_002"]
+  },
+  "building_ssot_full": {
+    "asset_identity": {
+      "disclosure_name": "성수권역 복합 상업시설",
+      "area_signal": "성동구 성수권역",
+      "gross_area_sqm": 1850,
+      "net_leasable_area_sqm": 1320,
+      "land_area_sqm": 420,
+      "building_type": "mixed_use",
+      "floors_above_ground": 6,
+      "floors_below_ground": 1,
+      "construction_year": 2018,
+      "asking_price_krw": 9500000000,
+      "notes": "노후 리모델링 완료, 1층 F&B 앵커 테넌트"
+    },
+    "lease_income": {
+      "rent_roll_available": true,
+      "rent_roll_confirmed": true,
+      "lease_count": 8,
+      "anchor_tenant_floor": "1F",
+      "anchor_tenant_type": "F&B",
+      "monthly_rent_total_krw": 38000000,
+      "operating_expenses_confirmed": true,
+      "operating_expense_monthly_krw": 4200000
+    },
+    "legal_registry": {
+      "registry_confirmed": true,
+      "land_use_zone": "일반상업지역",
+      "floor_area_ratio": 0.82,
+      "building_coverage_ratio": 0.58
+    },
+    "disclosure_gate": {
+      "protected_fields": ["exact_address", "tenant_name", "unit_rent", "owner_contact"],
+      "gate_level": "G3"
+    },
+    "missing_data": []
+  },
+  "readiness_result": {
+    "readiness_score": 81,
+    "score_band": "Full IM Draft",
+    "available_outputs": ["blind_teaser", "external_snapshot", "im_lite", "full_im_draft"],
+    "blocked_outputs": ["buyer_ready_full_im"],
+    "missing_data": [],
+    "recommended_expert_patches": [
+      { "section_type": "income_noi_yield_analysis", "expert_role": "cre_consultant", "priority": "high" }
+    ]
+  },
+  "sections": [
+    { "id": "sec_01", "section_order": 1, "section_type": "cover_confidentiality", "title": "Cover & Confidentiality", "status": "planned" },
+    { "id": "sec_02", "section_order": 2, "section_type": "executive_summary", "title": "Executive Summary", "status": "ai_draft" },
+    { "id": "sec_03", "section_order": 3, "section_type": "investment_thesis_buyer_fit", "title": "Investment Thesis & Buyer Fit", "status": "ai_draft" },
+    { "id": "sec_04", "section_order": 4, "section_type": "property_fact_sheet", "title": "Property Fact Sheet", "status": "ai_draft" },
+    { "id": "sec_05", "section_order": 5, "section_type": "location_market_context", "title": "Location & Market Context", "status": "ai_draft" },
+    { "id": "sec_06", "section_order": 6, "section_type": "building_condition_spec", "title": "Building Condition & Spec", "status": "planned" },
+    { "id": "sec_07", "section_order": 7, "section_type": "rent_roll_lease_quality", "title": "Rent Roll & Lease Quality", "status": "needs_expert_patch" },
+    { "id": "sec_08", "section_order": 8, "section_type": "income_noi_yield_analysis", "title": "Income, NOI & Yield Analysis", "status": "needs_expert_patch" },
+    { "id": "sec_09", "section_order": 9, "section_type": "operating_expense_noi", "title": "Operating Expense & NOI", "status": "planned" },
+    { "id": "sec_10", "section_order": 10, "section_type": "valuation_cap_rate", "title": "Valuation & Cap Rate", "status": "planned" },
+    { "id": "sec_11", "section_order": 11, "section_type": "value_add_scenario", "title": "Value-add Scenario", "status": "planned" },
+    { "id": "sec_12", "section_order": 12, "section_type": "debt_financing_note", "title": "Debt & Financing Note", "status": "planned" },
+    { "id": "sec_13", "section_order": 13, "section_type": "risk_factors_dd_checklist", "title": "Risk Factors & DD Checklist", "status": "ai_draft" },
+    { "id": "sec_14", "section_order": 14, "section_type": "tax_structure_note", "title": "Tax Structure Note", "status": "planned" },
+    { "id": "sec_15", "section_order": 15, "section_type": "legal_title_note", "title": "Legal & Title Note", "status": "planned" },
+    { "id": "sec_16", "section_order": 16, "section_type": "evidence_index", "title": "Evidence Index", "status": "planned" },
+    { "id": "sec_17", "section_order": 17, "section_type": "deal_process_next_steps", "title": "Deal Process & Next Steps", "status": "ai_draft" },
+    { "id": "sec_18", "section_order": 18, "section_type": "disclaimer_contact", "title": "Disclaimer & Contact", "status": "planned" }
+  ],
+  "expert_patch": {
+    "assignment_id": "asgn_demo_001",
+    "project_id": "proj_demo_001",
+    "section_id": "sec_08",
+    "expert_role": "cre_consultant",
+    "patch_type": "financial_assumption_fix",
+    "before_text": "NOI는 약 4억원으로 추정되며 수익률이 보장됩니다.",
+    "after_text": "NOI는 공개된 임대수익(연간 약 4.56억원) 및 추정 운영비(연간 약 0.5억원) 기준으로 약 4억원 내외로 추정됩니다. 실제 수익률은 임대조건, 공실기간, 운영비 변동에 따라 달라질 수 있으며, 별도 실사를 통해 확인하시기 바랍니다.",
+    "edit_tags": ["overclaim_removed", "risk_balance_added", "financial_assumption_added"],
+    "training_rights": "allowed_anonymized",
+    "visibility_after_review": "internal_only"
+  }
+}

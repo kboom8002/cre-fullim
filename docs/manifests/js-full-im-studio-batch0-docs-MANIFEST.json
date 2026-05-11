@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-05-09T02:03:40",
+  "batch": "Batch 0 — Repo / System Boundary Lock",
+  "files": [
+    "docs/00-repo-strategy.md",
+    "docs/01-system-boundaries.md",
+    "docs/02-shared-contracts-strategy.md",
+    "docs/BATCH-0-README.md"
+  ],
+  "purpose": "Lock repo strategy, system boundaries, and shared contracts strategy for JS Full IM Studio as a separate but integrated project."
+}
