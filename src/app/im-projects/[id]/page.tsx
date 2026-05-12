@@ -1,16 +1,15 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
 import { use } from "react";
+import Link from "next/link";
 import {
   ChevronRight, PlayCircle, FileText, ShieldCheck,
-  Download, Users, LayoutGrid, Zap, TrendingUp, AlertTriangle
+  Download, LayoutGrid, TrendingUp, AlertTriangle, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ReadinessScoreCard } from "@/components/ui/DomainCards";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -55,17 +54,37 @@ export default function IMProjectDashboard({ params }: { params: Promise<{ id: s
   const [readiness, setReadiness] = useState<ReadinessResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
+  const [generatingOutline, setGeneratingOutline] = useState(false);
+  const [outlineGenerated, setOutlineGenerated] = useState(false);
 
+  // Load project via the proper GET /api/im-projects/[id] endpoint
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetch(`/api/im-projects/${id}/bssot`)
+    fetch(`/api/im-projects/${id}`)
       .then(r => r.json())
       .then(r => {
-        if (r.ok) setProject({ ...r.data.bssot_full, ...r.data } as unknown as Project);
-        else toast.error("프로젝트를 불러오지 못했습니다.");
+        if (r.id) {
+          setProject(r as Project);
+        } else {
+          toast.error("프로젝트를 불러오지 못했습니다.");
+        }
       })
+      .catch(() => toast.error("네트워크 오류"))
       .finally(() => setLoading(false));
+  }, [id]);
+
+  // Check if sections already exist on load
+  useEffect(() => {
+    if (!id) return;
+    fetch(`/api/im-projects/${id}/generate-outline`)
+      .then(r => r.json())
+      .then(r => {
+        if (r.ok && r.data?.sections?.length > 0) {
+          setOutlineGenerated(true);
+        }
+      })
+      .catch(() => {});
   }, [id]);
 
   const runReadiness = useCallback(async () => {
@@ -77,7 +96,11 @@ export default function IMProjectDashboard({ params }: { params: Promise<{ id: s
       const json = await r.json();
       if (json.ok) {
         setReadiness(json.data);
-        toast.success("준비도 검토가 완료되었습니다.", { id: toastId });
+        // Also refresh project status
+        fetch(`/api/im-projects/${id}`)
+          .then(r => r.json())
+          .then(r => { if (r.id) setProject(r as Project); });
+        toast.success(`준비도 검토 완료 — ${json.data.readiness_score}점`, { id: toastId });
       } else {
         toast.error(json.message ?? "준비도 검토 실패", { id: toastId });
       }
@@ -85,6 +108,28 @@ export default function IMProjectDashboard({ params }: { params: Promise<{ id: s
       toast.error("네트워크 오류가 발생했습니다.", { id: toastId });
     } finally {
       setChecking(false);
+    }
+  }, [id]);
+
+  const generateOutline = useCallback(async () => {
+    if (!id) return;
+    setGeneratingOutline(true);
+    const toastId = toast.loading("18-섹션 아웃라인 생성 중…");
+    try {
+      const r = await fetch(`/api/im-projects/${id}/generate-outline`, { method: "POST" });
+      const json = await r.json();
+      if (json.ok) {
+        setOutlineGenerated(true);
+        toast.success(`${json.data.sections_created ?? 18}개 섹션 생성 완료!`, { id: toastId });
+        // Redirect to sections page
+        window.location.href = `/im-projects/${id}/sections`;
+      } else {
+        toast.error(json.message ?? "아웃라인 생성 실패", { id: toastId });
+      }
+    } catch {
+      toast.error("네트워크 오류", { id: toastId });
+    } finally {
+      setGeneratingOutline(false);
     }
   }, [id]);
 
@@ -120,11 +165,11 @@ export default function IMProjectDashboard({ params }: { params: Promise<{ id: s
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span>{project?.project_type?.replace(/_/g, " ")}</span>
             <span className="text-border">·</span>
-            <span>{project?.target_output?.replace(/_/g, " ")}</span>
+            <span>{OUTPUT_LABELS[project?.target_output ?? ""] ?? project?.target_output?.replace(/_/g, " ")}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -135,6 +180,23 @@ export default function IMProjectDashboard({ params }: { params: Promise<{ id: s
             <PlayCircle className={cn("h-3.5 w-3.5 mr-1.5", checking && "animate-spin")} />
             {checking ? "검토 중…" : "Readiness 실행"}
           </Button>
+
+          {/* Generate Outline button: always visible, prominent after readiness */}
+          <Button
+            size="sm"
+            onClick={generateOutline}
+            disabled={generatingOutline}
+            id="btn-generate-outline-dashboard"
+            className={cn(
+              "transition-all",
+              readiness
+                ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
+          >
+            <LayoutGrid className={cn("h-3.5 w-3.5 mr-1.5", generatingOutline && "animate-spin")} />
+            {generatingOutline ? "생성 중…" : outlineGenerated ? "18-섹션 보기" : "18-섹션 생성"}
+          </Button>
         </div>
       </div>
 
@@ -144,12 +206,79 @@ export default function IMProjectDashboard({ params }: { params: Promise<{ id: s
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Readiness + Quick Actions */}
         <div className="lg:col-span-2 space-y-5">
+
           {/* Readiness Card */}
           {readiness ? (
-            <ReadinessScoreCard
-              score={readiness.readiness_score}
-              note={readiness.boundary_note}
-            />
+            <div className="space-y-4">
+              <ReadinessScoreCard
+                score={readiness.readiness_score}
+                note={readiness.boundary_note}
+              />
+
+              {/* CTA: Generate Outline after readiness */}
+              <div className="rounded-xl border border-blue-800/40 bg-blue-950/20 p-4 flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-semibold text-blue-300 flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    준비도 검토 완료 — 이제 18-섹션 아웃라인을 생성하세요
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {readiness.readiness_score}점 기준으로 섹션별 상태·전문가 필요 여부가 자동으로 계획됩니다.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={outlineGenerated
+                    ? () => { window.location.href = `/im-projects/${id}/sections`; }
+                    : generateOutline}
+                  disabled={generatingOutline}
+                  className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white"
+                  id="btn-generate-outline-cta"
+                >
+                  <LayoutGrid className="h-3.5 w-3.5 mr-1.5" />
+                  {generatingOutline ? "생성 중…" : outlineGenerated ? "섹션 목록 보기" : "아웃라인 생성"}
+                </Button>
+              </div>
+
+              {/* Output Availability Matrix */}
+              <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">출력 가용성</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {[...readiness.available_outputs, ...readiness.blocked_outputs].map((out) => {
+                    const avail = readiness.available_outputs.includes(out);
+                    return (
+                      <div
+                        key={out}
+                        className={cn(
+                          "rounded-lg border px-3 py-2 text-xs font-medium flex items-center gap-2",
+                          avail
+                            ? "border-emerald-800/50 bg-emerald-950/30 text-emerald-300"
+                            : "border-border bg-muted/20 text-muted-foreground"
+                        )}
+                      >
+                        <span>{avail ? "✓" : "✗"}</span>
+                        <span>{OUTPUT_LABELS[out] ?? out}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {readiness.missing_required_data.length > 0 && (
+                  <div className="pt-2 space-y-1">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-amber-400 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      필수 누락 데이터
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {readiness.missing_required_data.map(m => (
+                        <span key={m} className="rounded-md border border-amber-800/40 bg-amber-950/30 px-2 py-0.5 text-[10px] font-mono text-amber-300">
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           ) : (
             <div className="rounded-xl border border-dashed border-border p-8 text-center space-y-3">
               <div className="text-3xl">📊</div>
@@ -157,51 +286,22 @@ export default function IMProjectDashboard({ params }: { params: Promise<{ id: s
               <p className="text-xs text-muted-foreground">
                 Readiness 실행 버튼을 클릭하면 데이터 품질, 섹션 가용성, 전문가 필요 영역을 자동으로 분석합니다.
               </p>
-              <Button size="sm" onClick={runReadiness} disabled={checking}>
-                <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
-                {checking ? "검토 중…" : "Readiness 실행"}
-              </Button>
-            </div>
-          )}
-
-          {/* Output Availability Matrix */}
-          {readiness && (
-            <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">출력 가용성</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {[...readiness.available_outputs, ...readiness.blocked_outputs].map((out) => {
-                  const avail = readiness.available_outputs.includes(out);
-                  return (
-                    <div
-                      key={out}
-                      className={cn(
-                        "rounded-lg border px-3 py-2 text-xs font-medium flex items-center gap-2",
-                        avail
-                          ? "border-emerald-800/50 bg-emerald-950/30 text-emerald-300"
-                          : "border-border bg-muted/20 text-muted-foreground"
-                      )}
-                    >
-                      <span>{avail ? "✓" : "✗"}</span>
-                      <span>{OUTPUT_LABELS[out] ?? out}</span>
-                    </div>
-                  );
-                })}
+              <div className="flex items-center justify-center gap-3 pt-1">
+                <Button size="sm" onClick={runReadiness} disabled={checking} id="btn-run-readiness-empty">
+                  <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
+                  {checking ? "검토 중…" : "Readiness 실행"}
+                </Button>
+                {outlineGenerated && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => { window.location.href = `/im-projects/${id}/sections`; }}
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5 mr-1.5" />
+                    기존 섹션 보기
+                  </Button>
+                )}
               </div>
-              {readiness.missing_required_data.length > 0 && (
-                <div className="pt-2 space-y-1">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-amber-400 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    필수 누락 데이터
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {readiness.missing_required_data.map(m => (
-                      <span key={m} className="rounded-md border border-amber-800/40 bg-amber-950/30 px-2 py-0.5 text-[10px] font-mono text-amber-300">
-                        {m}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -229,7 +329,7 @@ export default function IMProjectDashboard({ params }: { params: Promise<{ id: s
           </div>
         </div>
 
-        {/* Right sidebar: Expert patches + Section progress */}
+        {/* Right sidebar: Expert patches + Section progress + Project Info */}
         <div className="space-y-5">
           {readiness && readiness.required_expert_patches.length > 0 && (
             <div className="rounded-xl border border-border bg-card p-5 space-y-3">
@@ -279,7 +379,7 @@ export default function IMProjectDashboard({ params }: { params: Promise<{ id: s
                 );
               })}
               <Link href={`/im-projects/${id}/sections`} className="block mt-2">
-                <Button variant="outline" size="sm" className="w-full text-xs">
+                <Button variant="outline" size="sm" className="w-full text-xs" id="btn-view-sections">
                   <LayoutGrid className="h-3 w-3 mr-1.5" />
                   전체 섹션 보기
                 </Button>
