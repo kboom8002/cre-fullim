@@ -168,7 +168,7 @@ export function createSafePreview(
 
 export async function importFromHandoff(
   token: string,
-  actorId: string,
+  actorId: string | null,
 ): Promise<ImportResult> {
   // 1. Resolve payload from MVP
   const resolved = await resolveHandoffPayload(token);
@@ -305,8 +305,8 @@ export async function importFromHandoff(
     };
   }
 
-  // Add the actor as project owner if it's a real user
-  if (actorId && actorId !== "00000000-0000-0000-0000-000000000000") {
+  // Add the actor as project owner if it's a real authenticated user
+  if (actorId) {
     await supabase.from("im_project_members").insert({
       project_id: imProject.id,
       user_id: actorId,
@@ -373,7 +373,7 @@ async function emitEvent({
   entityId,
   metadata,
 }: {
-  actorId: string;
+  actorId: string | null;
   actorRole: string;
   eventType: string;
   entityType: string;

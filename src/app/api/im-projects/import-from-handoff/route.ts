@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
     const { data: userAuth } = await supabase.auth.getUser();
-    const actorId = userAuth?.user?.id || "00000000-0000-0000-0000-000000000000";
+    const actorId = userAuth?.user?.id ?? null;
 
     const result = await importFromHandoff(handoff_token, actorId);
 
