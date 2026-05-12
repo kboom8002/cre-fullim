@@ -71,7 +71,9 @@ export async function resolveHandoffPayload(token: string): Promise<ResolveResul
     return { success: true, payload: demoPayload };
   }
 
-  const mvpBaseUrl = process.env.MVP_BASE_URL ?? "https://cre-dealcard.vercel.app";
+  const mvpBaseUrl = process.env.NODE_ENV === "production"
+    ? "https://cre-dealcard.vercel.app"
+    : (process.env.MVP_BASE_URL ?? "http://localhost:3000");
   let resp: Response;
   try {
     resp = await fetch(`${mvpBaseUrl}/api/full-im-handoffs/${token}`, {
@@ -81,11 +83,11 @@ export async function resolveHandoffPayload(token: string): Promise<ResolveResul
         "x-service-api-key": process.env.INTER_SERVICE_API_KEY || "mock-inter-service-key",
       },
     });
-  } catch {
+  } catch (err: any) {
     return {
       success: false,
       code: HANDOFF_ERROR_CODES.HANDOFF_SOURCE_FETCH_FAILED,
-      message: "MVP 서버에 연결할 수 없습니다.",
+      message: `MVP 서버에 연결할 수 없습니다. (${err?.message || "Unknown Error"}) url: ${mvpBaseUrl}`,
     };
   }
 
