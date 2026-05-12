@@ -37,6 +37,7 @@ export interface MobileIMSupplementalInput {
   vacancy_status?: string;           // 공실 현황 간단 입력
   photo_urls?: string[];             // 대표 사진 3~5장
   broker_highlight?: string;         // 브로커 한줄 코멘트
+  estimated_yield_pct?: number;      // 예상 수익률
 }
 
 export interface MobileIMSection {
@@ -53,4 +54,5 @@ export interface MobileIMLiteGateResult {
   risk_status: "pass" | "revise" | "blocked";
   redacted_fields: string[];
   risk_issues: { severity: string; message: string }[];
+  boundary_note?: string;
 }
