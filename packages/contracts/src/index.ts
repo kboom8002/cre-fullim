@@ -121,8 +121,8 @@ export const BuildingSSoTFullSchema = z.object({
 
   readiness_status: z.enum(["lite_imported", "needs_data", "im_lite_ready", "full_im_draft_ready", "buyer_ready_candidate"]).default("lite_imported"),
 
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime().optional()
+  created_at: z.string().datetime({ offset: true }),
+  updated_at: z.string().datetime({ offset: true }).optional()
 });
 export type BuildingSSoTFull = z.infer<typeof BuildingSSoTFullSchema>;
 
@@ -154,8 +154,8 @@ export const IMProjectSchema = z.object({
   required_expert_patches: z.array(z.string()).default([]),
   source_document_ids: z.array(z.string()).default([]),
   source_refs: z.array(z.any()).default([]),
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime().optional()
+  created_at: z.string().datetime({ offset: true }),
+  updated_at: z.string().datetime({ offset: true }).optional()
 });
 export type IMProject = z.infer<typeof IMProjectSchema>;
 
@@ -193,8 +193,8 @@ export const IMSectionSchema = z.object({
   markdown: z.string().optional(),
   source_refs: z.array(z.any()).default([]),
   evidence_refs: z.array(z.any()).default([]),
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime().optional()
+  created_at: z.string().datetime({ offset: true }),
+  updated_at: z.string().datetime({ offset: true }).optional()
 });
 export type IMSection = z.infer<typeof IMSectionSchema>;
 
@@ -241,8 +241,8 @@ export const ExpertPatchSchema = z.object({
   requires_additional_review: z.boolean().default(false),
   training_rights: TrainingRightsSchema.default("not_allowed"),
   status: z.enum(["draft", "submitted", "reviewed", "approved", "rejected"]).default("draft"),
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime().optional()
+  created_at: z.string().datetime({ offset: true }),
+  updated_at: z.string().datetime({ offset: true }).optional()
 });
 export type ExpertPatch = z.infer<typeof ExpertPatchSchema>;
 
@@ -367,8 +367,8 @@ export const FullIMHandoffPayloadSchema = z.object({
     "owner_readiness", "expert_note", "evidence_refs"
   ])).default(["building_ssot_lite"]),
 
-  expires_at: z.string().datetime(),
-  created_at: z.string().datetime()
+  expires_at: z.string().datetime({ offset: true }),
+  created_at: z.string().datetime({ offset: true })
 });
 export type FullIMHandoffPayload = z.infer<typeof FullIMHandoffPayloadSchema>;
 
@@ -385,7 +385,7 @@ export const HandoffSourceSnapshotSchema = z.object({
   source_objects: z.record(z.string(), z.any()).default({}),
 
   imported_by: z.string().optional(),
-  imported_at: z.string().datetime(),
+  imported_at: z.string().datetime({ offset: true }),
 
   import_status: z.enum(["pending", "imported", "imported_with_warnings", "failed"]),
   warnings: z.array(z.string()).default([])
@@ -404,7 +404,7 @@ export const CrossAppActivityEventSchema = z.object({
   entity_type: z.string(),
   entity_id: z.string().optional(),
   metadata: z.record(z.string(), z.any()).default({}),
-  occurred_at: z.string().datetime()
+  occurred_at: z.string().datetime({ offset: true })
 });
 export type CrossAppActivityEvent = z.infer<typeof CrossAppActivityEventSchema>;
 
