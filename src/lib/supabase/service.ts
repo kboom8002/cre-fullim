@@ -27,7 +27,7 @@ export function getServerEnv() {
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
     OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? "",
     AI_DEFAULT_MODEL: process.env.AI_DEFAULT_MODEL ?? "gpt-4o",
-    APP_BASE_URL: process.env.APP_BASE_URL ?? "http://localhost:3005",
-    MVP_BASE_URL: process.env.MVP_BASE_URL ?? "http://localhost:3002",
+    APP_BASE_URL: process.env.APP_BASE_URL ?? "https://cre-fullim.vercel.app",
+    MVP_BASE_URL: process.env.MVP_BASE_URL ?? "https://cre-dealcard.vercel.app",
   };
 }

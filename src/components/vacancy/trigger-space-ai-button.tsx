@@ -30,7 +30,7 @@ export function TriggerSpaceAIButton({
       }
 
       const drafts = json.data.space_drafts || [];
-      const urls = drafts.map((d: any) => `${process.env.NEXT_PUBLIC_SPACE_AI_PAGE_URL || "http://localhost:3003"}${d.next_url}`);
+      const urls = drafts.map((d: any) => `${process.env.NEXT_PUBLIC_SPACE_AI_PAGE_URL || "https://cre-aipage.vercel.app"}${d.next_url}`);
       setSpaceAiUrls(urls);
       setStatus("success");
     } catch (err: any) {

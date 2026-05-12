@@ -56,7 +56,7 @@ export async function POST(
       disclosure_level: "internal_only",
     };
 
-    const spaceAiBaseUrl = process.env.SPACE_AI_PAGE_URL || "http://localhost:3003";
+    const spaceAiBaseUrl = process.env.SPACE_AI_PAGE_URL || "https://cre-aipage.vercel.app";
 
     // 2. Call Space AI Page
     const res = await fetch(`${spaceAiBaseUrl}/api/handoffs/from-full-im`, {

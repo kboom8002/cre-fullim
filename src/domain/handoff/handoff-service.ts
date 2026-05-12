@@ -71,8 +71,7 @@ export async function resolveHandoffPayload(token: string): Promise<ResolveResul
     return { success: true, payload: demoPayload };
   }
 
-  // Call MVP's handoff resolution endpoint
-  const mvpBaseUrl = process.env.MVP_BASE_URL ?? "http://localhost:3002";
+  const mvpBaseUrl = process.env.MVP_BASE_URL ?? "https://cre-dealcard.vercel.app";
   let resp: Response;
   try {
     resp = await fetch(`${mvpBaseUrl}/api/full-im-handoffs/${token}`, {
