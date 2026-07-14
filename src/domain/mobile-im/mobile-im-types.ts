@@ -28,6 +28,7 @@ export interface MobileIMProject {
   boundary_note?: string;
   full_im_readiness_score?: number;
   full_im_missing_data?: string[];
+  external_data?: any;               // 공공데이터/로컬 API 캐싱 데이터 통합 필드
   created_at: string;
   published_at?: string;
 }
@@ -47,6 +48,7 @@ export interface MobileIMSection {
   markdown: string;
   confidence: "confirmed" | "inferred" | "needs_check";
   boundary_note: string;
+  provenance?: any[];                 // 해당 섹션 관련 데이터 포인트들의 출처 맵
 }
 
 export interface MobileIMLiteGateResult {

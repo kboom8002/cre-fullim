@@ -58,7 +58,7 @@ export async function POST(
   // Load project
   const { data: project } = await supabase
     .from("im_projects")
-    .select("id, status, created_by, readiness_score, building_ssot_full_id")
+    .select("id, status, created_by, readiness_score, building_ssot_full_id, source_building_ssot_lite_id, title")
     .eq("id", projectId)
     .single();
 
@@ -224,6 +224,57 @@ export async function POST(
         completed_at: new Date().toISOString(),
       })
       .eq("id", jobId);
+
+    // 5. Auto-sync IM export summary back to DealCard document_objects (G-DOC-3)
+    if (export_mode === "buyer_ready" && project.source_building_ssot_lite_id) {
+      try {
+        const { data: existingDoc } = await supabase
+          .from("document_objects")
+          .select("id")
+          .eq("building_id", project.source_building_ssot_lite_id)
+          .eq("document_type", "im_lite_draft")
+          .maybeSingle();
+
+        const docBody = {
+          project_id: projectId,
+          export_mode: export_mode,
+          exported_at: new Date().toISOString(),
+          sections: sectionList.map(s => ({ title: s.title })),
+          disclaimer: STANDARD_DISCLAIMER
+        };
+
+        const mdContent = String(output.markdown || "");
+
+        if (existingDoc) {
+          await supabase
+            .from("document_objects")
+            .update({
+              body: docBody,
+              markdown: mdContent,
+              updated_at: new Date().toISOString(),
+              status: "broker_reviewed"
+            })
+            .eq("id", existingDoc.id);
+        } else {
+          await supabase
+            .from("document_objects")
+            .insert({
+              owner_id: userId || project.created_by || null,
+              source_type: "building_ssot_lite",
+              source_id: project.source_building_ssot_lite_id,
+              building_id: project.source_building_ssot_lite_id,
+              document_type: "im_lite_draft",
+              visibility: "gate_restricted",
+              status: "broker_reviewed",
+              title: `${project.title || "성수동 빌딩"} Full IM Export Summary`,
+              body: docBody,
+              markdown: mdContent
+            });
+        }
+      } catch (syncErr) {
+        console.warn("[syncToDealCard] Failed to sync document back to MVP:", syncErr);
+      }
+    }
 
     // 5. Emit im_exported
     await supabase.from("activity_events").insert({

@@ -24,6 +24,7 @@ import {
   type FullIMHandoffPayload,
 } from "@js-ssot/contracts";
 import { createServiceClient } from "@/lib/supabase/service";
+import { parseFitSummary, parseCautionSummary } from "./handoff-parser";
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -32,7 +33,7 @@ type TokenResult =
   | { valid: false; code: string; message: string };
 
 type ResolveResult =
-  | { success: true; payload: FullIMHandoffPayload & { status: string; building_ssot_lite?: Record<string, unknown> } }
+  | { success: true; payload: FullIMHandoffPayload & { status: string; building_ssot_lite?: Record<string, unknown>; source_documents?: Record<string, unknown>[] } }
   | { success: false; code: string; message: string };
 
 export type ImportResult =
@@ -142,7 +143,8 @@ export async function resolveHandoffPayload(token: string): Promise<ResolveResul
       ...parsed.data,
       status: rawPayload.status ?? "pending_import",
       building_ssot_lite: rawPayload.building_ssot_lite ?? undefined,
-    },
+      source_documents: rawPayload.source_documents ?? undefined,
+    } as any,
   };
 }
 
@@ -212,6 +214,7 @@ export async function importFromHandoff(
       source_document_ids: payload.source_document_ids,
       source_buyer_intent_id: payload.source_buyer_intent_id,
       source_owner_readiness_id: payload.source_owner_readiness_id,
+      source_documents: payload.source_documents ?? [],
     },
     imported_by: actorId || null,
     imported_at: now,
@@ -234,9 +237,42 @@ export async function importFromHandoff(
   }
 
   // 3. Create Building SSoT Full draft
-  // Gap 4 fix: map building_ssot_lite fields → building_ssot_full layers
-  const assetIdentity = buildAssetIdentityFromLite(bssotLiteData);
-  const physicalFact = buildPhysicalFactFromLite(bssotLiteData);
+  // Parse fit and caution summaries
+  const fitSummaryText = String(bssotLiteData.fit_summary || "");
+  const cautionSummaryText = String(bssotLiteData.caution_summary || "");
+  const parsedFit = await parseFitSummary(fitSummaryText);
+  const parsedCaution = await parseCautionSummary(cautionSummaryText);
+
+  // Map nested layers if available
+  const layers = (bssotLiteData.layers as Record<string, any>) || {};
+
+  const assetIdentity = {
+    ...buildAssetIdentityFromLite(bssotLiteData),
+    ...(layers.asset_identity || {}),
+  };
+  const physicalFact = {
+    ...buildPhysicalFactFromLite(bssotLiteData),
+    ...(layers.physical_fact || {}),
+  };
+  const legalRegistry = layers.legal_registry || {};
+  const leaseIncome = {
+    ...(layers.lease_income || {}),
+    vacancy_summary: bssotLiteData.vacancy_signal || layers.lease_income?.vacancy_summary || null,
+  };
+  const marketLocation = layers.market_location || {};
+  const valueUpHypothesis = layers.value_up_hypothesis || {};
+  const riskUnknown = {
+    ...parsedCaution,
+    ...(layers.risk_unknown || {}),
+  };
+  const buyerFit = {
+    ...parsedFit,
+    ...(layers.buyer_fit || {}),
+  };
+  const evidenceSource = {
+    source_refs: Array.isArray(bssotLiteData.source_refs) ? bssotLiteData.source_refs : [],
+    evidence_refs: Array.isArray(bssotLiteData.evidence_refs) ? bssotLiteData.evidence_refs : [],
+  };
 
   const { data: bssotFull, error: bssotErr } = await supabase
     .from("building_ssot_full")
@@ -245,12 +281,12 @@ export async function importFromHandoff(
       created_by: actorId || null,
       asset_identity: assetIdentity,
       physical_fact: physicalFact,
-      legal_registry: {},
-      lease_income: {},
-      market_location: {},
-      value_up_hypothesis: {},
-      risk_unknown: {},
-      buyer_fit: {},
+      legal_registry: legalRegistry,
+      lease_income: leaseIncome,
+      market_location: marketLocation,
+      value_up_hypothesis: valueUpHypothesis,
+      risk_unknown: riskUnknown,
+      buyer_fit: buyerFit,
       disclosure_gate: {
         protected_fields: [...PROTECTED_FIELDS],
         hidden_fields: bssotLiteData.hidden_fields ?? [],
@@ -258,11 +294,11 @@ export async function importFromHandoff(
         allowed_visibility: [],
         gate_notes: [],
       },
-      evidence_source: { source_refs: [], evidence_refs: [] },
-      b2c_consumer_demand: {},
-      space_environmental: {},
-      tenant_operator_management: {},
-      ai_answer_document_contract: {},
+      evidence_source: evidenceSource,
+      b2c_consumer_demand: layers.b2c_consumer_demand || {},
+      space_environmental: layers.space_environmental || {},
+      tenant_operator_management: layers.tenant_operator_management || {},
+      ai_answer_document_contract: layers.ai_answer_document_contract || {},
       readiness_status: "lite_imported",
     })
     .select("id")
@@ -312,6 +348,52 @@ export async function importFromHandoff(
       user_id: actorId,
       role: "owner"
     });
+  }
+
+  // 5. Auto-convert expert note request to expert assignment (G-EXP-1)
+  if (payload.source_expert_note_request_id) {
+    try {
+      const { data: defaultExpert } = await supabase
+        .from("expert_profiles")
+        .select("id, expert_role")
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+
+      if (defaultExpert) {
+        const { data: noteReq } = await supabase
+          .from("expert_note_requests")
+          .select("*")
+          .eq("id", payload.source_expert_note_request_id)
+          .single();
+
+        if (noteReq) {
+          const { data: sec } = await supabase
+            .from("im_sections")
+            .select("id")
+            .eq("project_id", imProject.id)
+            .eq("section_type", "executive_summary")
+            .maybeSingle();
+
+          const creatorId = actorId || payload.created_by || (await supabase.from("profiles").select("id").limit(1).single()).data?.id;
+
+          if (creatorId) {
+            await supabase.from("expert_assignments").insert({
+              project_id: imProject.id,
+              section_id: sec?.id || null,
+              expert_id: defaultExpert.id,
+              expert_role: defaultExpert.expert_role || "cre_consultant",
+              assignment_type: "fact_correction",
+              status: "assigned",
+              instructions: `DealCard 전문가 노트 연동 요청: ${noteReq.user_goal || "자산 검토 필요"}`,
+              created_by: creatorId,
+            });
+          }
+        }
+      }
+    } catch (assignErr) {
+      console.warn("[importFromHandoff] Failed to auto-convert expert note:", assignErr);
+    }
   }
 
   // 5. Mark handoff as imported (notify MVP via its own DB)

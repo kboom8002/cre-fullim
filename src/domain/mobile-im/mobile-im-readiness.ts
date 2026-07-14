@@ -15,13 +15,15 @@ export const MOBILE_IM_DATA_POINTS = [
 
 export function computeMobileIMReadiness(
   bssotLite: Record<string, unknown>,
-  supplemental: MobileIMSupplementalInput
-): { score: number; can_generate: boolean; missing: string[] } {
+  supplemental: MobileIMSupplementalInput,
+  externalData?: any
+): { score: number; can_generate: boolean; missing: string[]; has_external_data: boolean } {
   let score = 0;
   const missing: string[] = [];
 
   const assetIdentity = (bssotLite.asset_identity ?? {}) as Record<string, unknown>;
   const marketLocation = (bssotLite.market_location ?? {}) as Record<string, unknown>;
+  const physicalFact = (bssotLite.physical_fact ?? {}) as Record<string, unknown>;
 
   // Check area_signal
   if (assetIdentity.area_signal) score += 15;
@@ -35,12 +37,12 @@ export function computeMobileIMReadiness(
   if (assetIdentity.asset_type) score += 15;
   else missing.push("자산 유형");
 
-  // Check monthly_rent (Supplemental)
+  // Check monthly_rent (Supplemental or BSSoT Lite)
   if (supplemental.monthly_rent_total_krw && supplemental.monthly_rent_total_krw > 0) score += 20;
+  else if (bssotLite.monthly_rent_total && Number(bssotLite.monthly_rent_total) > 0) score += 20;
   else missing.push("월세 총액");
 
   // Check vacancy (Supplemental or BSSoT Lite)
-  const physicalFact = (bssotLite.physical_fact ?? {}) as Record<string, unknown>;
   if (supplemental.vacancy_status || physicalFact.vacancy_signal) score += 10;
   else missing.push("공실 현황");
 
@@ -48,9 +50,16 @@ export function computeMobileIMReadiness(
   if (supplemental.photo_urls && supplemental.photo_urls.length > 0) score += 15;
   else missing.push("건물 사진");
 
-  // Check location
-  if (marketLocation.location_analysis || bssotLite.address) score += 10;
+  // Check location (External Address Resolver counts as verified location)
+  if (externalData?.resolvedAddress || marketLocation.location_analysis || bssotLite.address) score += 10;
   else missing.push("상세 위치/입지");
+
+  // External data trust boost (+10 score bonus for having official building register and zoning plan)
+  let hasExternal = false;
+  if (externalData?.buildingRegister || externalData?.landUsePlan) {
+    score += 10;
+    hasExternal = true;
+  }
 
   score = Math.min(score, 100);
 
@@ -58,5 +67,6 @@ export function computeMobileIMReadiness(
     score,
     can_generate: score >= MOBILE_IM_READINESS_THRESHOLD,
     missing,
+    has_external_data: hasExternal,
   };
 }
